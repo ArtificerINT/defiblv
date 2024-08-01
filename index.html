@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Interactive Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <style>
+    #map { height: 600px; }
+    .marker-info { display: flex; justify-content: space-between; align-items: center; }
+    .center-button, .navigate-button { margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+  <script src="data.js"></script> <!-- Your data file -->
+  <script>
+    var map = L.map('map').setView([0, 0], 2); // Initial map center and zoom level
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var userLocation = null; // User's location to be set later
+    var routeControl = L.Routing.control({
+      waypoints: [],
+      createMarker: function() { return null; },
+      routeWhileDragging: true
+    }).addTo(map);
+
+    var data = [
+        { "lat": 56.9937, "lng": 24.2833, "description": "Biķeru iela 4, Ulbroka", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.5095, "lng": 21.0105, "description": "Kārļa Zāles laukums 8, Liepāja", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 57.3861, "lng": 21.5632, "description": "Lielais prospekts 3/5, Ventspils", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.6497, "lng": 23.1666, "description": "Katoļu iela 18, Jelgava", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.946, "lng": 24.1059, "description": "Jaunmoku iela 21, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.6217, "lng": 23.2834, "description": "Brīvības iela 30, Dobele", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.5352, "lng": 27.2666, "description": "Atbrīvošanas aleja 138, Rēzekne", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 57.1667, "lng": 24.4667, "description": "Rīgas gatve 5, Ādaži", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9706, "lng": 24.1271, "description": "Brīvības gatve 372, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9712, "lng": 24.1544, "description": "Latgales iela 400, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9707, "lng": 24.1715, "description": "Stirnu iela 26, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9505, "lng": 24.1031, "description": "Krasta iela 46, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9461, "lng": 24.1131, "description": "Āzenes iela 5, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9467, "lng": 24.1109, "description": "Kr.Valdemāra iela 112, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 57.1501, "lng": 24.8499, "description": "Strēlnieku iela 2, Sigulda", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9502, "lng": 24.1295, "description": "Mīlgrāvja iela 14, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9801, "lng": 23.8224, "description": "Talsu šoseja 29, Jūrmala", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 55.8804, "lng": 26.5004, "description": "Cietokšņa iela 72a, Daugavpils", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9477, "lng": 24.1193, "description": "Kurzemes prospekts 1a, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9933, "lng": 24.2678, "description": "Biķernieku iela 160, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.4075, "lng": 24.3652, "description": "Pionieru iela 2, Bauska", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9842, "lng": 23.1556, "description": "Pasta iela 14, Tukums", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.5208, "lng": 25.4061, "description": "Vienības iela 7, Jēkabpils", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.8218, "lng": 24.5839, "description": "Rīgas iela 33, Ogre", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.7714, "lng": 24.3186, "description": "Skolas iela 4e, Salaspils", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9179, "lng": 24.3896, "description": "Džutas, Krustkalni, Ķekavas novads", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9411, "lng": 24.0677, "description": "Imantas 15. līnija 7, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.6497, "lng": 23.1666, "description": "Rīgas iela 48, Jelgava", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.5125, "lng": 21.0164, "description": "Jaunā Ostmala 3/5, Liepāja", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9417, "lng": 24.0972, "description": "A.Deglava iela 110, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9208, "lng": 23.5936, "description": "Daugavas iela 31, Mārupe", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9536, "lng": 24.1324, "description": "P.Brieža iela 33a, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9746, "lng": 24.1526, "description": "Mazā Rencēnu iela 1, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9492, "lng": 24.1157, "description": "Gaiļezera iela 8, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 57.5327, "lng": 25.4351, "description": "Rīgas iela 74, Valmiera", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9469, "lng": 24.1044, "description": "Satekles iela 2B, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9728, "lng": 24.1407, "description": "Vienības gatve 194a, Rīga", "link": "https://www.rimi.lv/veikali" },
+        { "lat": 56.9448, "lng": 24.1408, "description": "Brīvības iela 201, Rīga", "link": "https://www.rimi.lv/veikali" }
+        ];
+       
+    data.forEach(function(point) {
+      L.marker([point.lat, point.lng])
+        .bindPopup(`<div class="marker-info">
+                      <div><b>${point.description}</b><br><a href="${point.link}" target="_blank">More info</a></div>
+                      <button class="center-button" onclick="centerMap(${point.lat}, ${point.lng})">Center</button>
+                      <button class="navigate-button" onclick="navigateTo(${point.lat}, ${point.lng})">Navigate</button>
+                    </div>`)
+        .addTo(map);
+    });
+
+    function centerMap(lat, lng) {
+      map.setView([lat, lng], 12);
+    }
+
+    function navigateTo(lat, lng) {
+      if (userLocation) {
+        routeControl.setWaypoints([
+          L.latLng(userLocation[0], userLocation[1]),
+          L.latLng(lat, lng)
+        ]);
+        map.setView([lat, lng], 12);
+      } else {
+        alert("User location is not available.");
+      }
+    }
+
+    // Geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        userLocation = [position.coords.latitude, position.coords.longitude];
+        L.marker(userLocation).addTo(map).bindPopup("You are here").openPopup();
+        map.setView(userLocation, 10);
+      }, function(error) {
+        console.error("Geolocation error:", error);
+      });
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  </script>
+</body>
+</html>
+
+<!-- This is a comment 
+
+
+-->
